@@ -1,0 +1,201 @@
+# helm_release.goapp:
+resource "helm_release" "goapp" {
+    atomic                     = false
+    chart                      = "charts/go-app"
+    cleanup_on_fail            = false
+    create_namespace           = false
+    dependency_update          = false
+    disable_crd_hooks          = false
+    disable_openapi_validation = false
+    disable_webhooks           = false
+    force_update               = false
+    id                         = "go-app"
+    lint                       = false
+    max_history                = 0
+    metadata                   = {
+        app_version    = "0.1.0"
+        chart          = "goapp"
+        first_deployed = 1763244450
+        last_deployed  = 1763244450
+        name           = "go-app"
+        namespace      = "future-2-0"
+        notes          = ""
+        revision       = 1
+        values         = jsonencode(
+            {
+                env     = [
+                    {
+                        name  = "DB_CONNECTION_STRING"
+                        value = "postgres://postgres:postgres@postgres-postgresql.future-2-0.svc.cluster.local/postgres?sslmode=disable"
+                    },
+                ]
+                image   = {
+                    pullPolicy = "IfNotPresent"
+                    repository = "ghcr.io/breadrock1/architecture-future_2_0/go-app:sha-7e89814"
+                }
+                service = {
+                    port = 8080
+                }
+            }
+        )
+        version        = "0.1.0"
+    }
+    name                       = "go-app"
+    namespace                  = "future-2-0"
+    pass_credentials           = false
+    recreate_pods              = false
+    render_subchart_notes      = true
+    replace                    = false
+    reset_values               = false
+    reuse_values               = false
+    set_wo                     = (write-only attribute)
+    skip_crds                  = false
+    status                     = "deployed"
+    take_ownership             = false
+    timeout                    = 300
+    upgrade_install            = false
+    values                     = [
+        <<-EOT
+            image:
+              repository: "ghcr.io/breadrock1/architecture-future_2_0/go-app:sha-7e89814"
+              pullPolicy: IfNotPresent
+            
+            env:
+              - name: "DB_CONNECTION_STRING"
+                value: "postgres://postgres:postgres@postgres-postgresql.future-2-0.svc.cluster.local/postgres?sslmode=disable"
+            
+            service:
+              port: 8080
+        EOT,
+    ]
+    verify                     = false
+    version                    = "0.1.0"
+    wait                       = true
+    wait_for_jobs              = false
+}
+
+# helm_release.postgres:
+resource "helm_release" "postgres" {
+    atomic                     = false
+    chart                      = "postgresql"
+    cleanup_on_fail            = false
+    create_namespace           = false
+    dependency_update          = false
+    disable_crd_hooks          = false
+    disable_openapi_validation = false
+    disable_webhooks           = false
+    force_update               = false
+    id                         = "postgres"
+    lint                       = false
+    max_history                = 0
+    metadata                   = {
+        app_version    = "18.1.0"
+        chart          = "postgresql"
+        first_deployed = 1763244427
+        last_deployed  = 1763244427
+        name           = "postgres"
+        namespace      = "future-2-0"
+        notes          = <<-EOT
+            CHART NAME: postgresql
+            CHART VERSION: 18.1.9
+            APP VERSION: 18.1.0
+            
+            ⚠ WARNING: Since August 28th, 2025, only a limited subset of images/charts are available for free.
+                Subscribe to Bitnami Secure Images to receive continued support and security updates.
+                More info at https://bitnami.com and https://github.com/bitnami/containers/issues/83267
+            
+            ** Please be patient while the chart is being deployed **
+            
+            PostgreSQL can be accessed via port 5432 on the following DNS names from within your cluster:
+            
+                postgres-postgresql.future-2-0.svc.cluster.local - Read/Write connection
+            
+            To get the password for "postgres" run:
+            
+                export POSTGRES_PASSWORD=$(kubectl get secret --namespace future-2-0 postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+            
+            To connect to your database run the following command:
+            
+                kubectl run postgres-postgresql-client --rm --tty -i --restart='Never' --namespace future-2-0 --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=$POSTGRES_PASSWORD" \
+                  --command -- psql --host postgres-postgresql -U postgres -d postgres -p 5432
+            
+                > NOTE: If you access the container using bash, make sure that you execute "/opt/bitnami/scripts/postgresql/entrypoint.sh /bin/bash" in order to avoid the error "psql: local user with ID 1001} does not exist"
+            
+            To connect to your database from outside the cluster execute the following commands:
+            
+                kubectl port-forward --namespace future-2-0 svc/postgres-postgresql 5432:5432 &
+                PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5432
+            
+            WARNING: The configured password will be ignored on new installation in case when previous PostgreSQL release was deleted through the helm command. In that case, old PVC will have an old password, and setting it through helm won't take effect. Deleting persistent volumes (PVs) will solve the issue.
+            WARNING: Rolling tag detected (bitnami/postgresql:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.
+            +info https://techdocs.broadcom.com/us/en/vmware-tanzu/application-catalog/tanzu-application-catalog/services/tac-doc/apps-tutorials-understand-rolling-tags-containers-index.html
+            WARNING: Rolling tag detected (bitnami/os-shell:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.
+            +info https://techdocs.broadcom.com/us/en/vmware-tanzu/application-catalog/tanzu-application-catalog/services/tac-doc/apps-tutorials-understand-rolling-tags-containers-index.html
+            
+            WARNING: There are "resources" sections in the chart not set. Using "resourcesPreset" is not recommended for production. For production installations, please set the following values according to your workload needs:
+              - primary.resources
+              - readReplicas.resources
+            +info https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        EOT
+        revision       = 1
+        values         = jsonencode(
+            {
+                auth    = {
+                    database = "postgres"
+                    password = "postgres"
+                    username = "postgres"
+                }
+                primary = {
+                    persistence = {
+                        enabled = false
+                    }
+                }
+            }
+        )
+        version        = "18.1.9"
+    }
+    name                       = "postgres"
+    namespace                  = "future-2-0"
+    pass_credentials           = false
+    recreate_pods              = false
+    render_subchart_notes      = true
+    replace                    = false
+    repository                 = "https://charts.bitnami.com/bitnami"
+    reset_values               = false
+    reuse_values               = false
+    set_wo                     = (write-only attribute)
+    skip_crds                  = false
+    status                     = "deployed"
+    take_ownership             = false
+    timeout                    = 300
+    upgrade_install            = false
+    values                     = [
+        <<-EOT
+            "auth":
+              "database": "postgres"
+              "password": "postgres"
+              "username": "postgres"
+            "primary":
+              "persistence":
+                "enabled": false
+        EOT,
+    ]
+    verify                     = false
+    version                    = "18.1.9"
+    wait                       = true
+    wait_for_jobs              = false
+}
+
+# kubernetes_namespace.ns:
+resource "kubernetes_namespace" "ns" {
+    id                               = "future-2-0"
+    wait_for_default_service_account = false
+
+    metadata {
+        generate_name    = null
+        generation       = 0
+        name             = "future-2-0"
+        resource_version = "4653"
+        uid              = "74b908bd-5a34-4da3-bf70-cac15fb2eb27"
+    }
+}

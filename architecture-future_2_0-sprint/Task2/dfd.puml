@@ -1,0 +1,31 @@
+@startuml
+title Data Flow Diagram - Будущее 2.0
+
+rectangle "Clinic" as clinic
+rectangle "Laboratory" as laboratory
+rectangle "Pharmaceutic" as pharmaceutic
+rectangle "WMS" as wms
+rectangle "Fintech" as fintech
+rectangle "AI System" as ai
+rectangle "Partner devices" as devices
+rectangle "Data Lakehouse Platform" as dlh
+
+clinic -down-> dlh : Медицинские данные (анализы, визиты)
+clinic -left-> laboratory : Лаборатория (анализы, исследования)
+
+pharmaceutic -right-> dlh : Каталоги, заказы
+pharmaceutic -down-> dlh : Финансовые транзакции, счета
+pharmaceutic -right-> wms : Поставка со склада
+wms -down-> dlh : Учето товаров
+
+devices -left-> dlh : Потоки IoT-данных
+
+dlh -down-> ai : Обогащённые датасеты для ML
+dlh -down-> ai : Объединённые данные для обучения моделей
+dlh -up-> fintech : Финансовая аналитика, отчётность
+
+ai -up-> pharmaceutic : Рекомендации лекарств
+ai -up-> devices : Настройки устройств на основе анализа
+ai -up-> clinic : Результаты диагностики и прогнозы
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Контекстная диаграмма ESB
+
+Person(admin, "Администратор", "Настройка системы ESB и инфраструктуры")
+Person(dev, "Разработчик", "Разработка и поддержка внутренних решений")
+Person(support, "Служба поддержки", "Мониторинг, алерты, разбор инцидентов")
+
+System(esb, "ESB", "Оркестрация системы, политики безопасности, трансформация")
+
+System_Ext(banking, "Банковская система", "Платежи, выписки, сверка")
+System_Ext(crm, "CRM", "Профили, статусы заказов")
+System_Ext(financy, "Financy", "Финансовое подразделение (Бухгалтерия)")
+System_Ext(wms, "Склад / WMS", "Учет и управление товарами")
+System_Ext(notify, "Система уведомлений", "Email/SMS/Push шлюзы")
+System_Ext(iam, "IAM / SSO", "Keycloak / OAuth2 / OIDC")
+System_Ext(monitoring, "Система мониторинга и алертов", "Prometheus and Grafana stack")
+System_Ext(dwh, "DWH / Lakehouse", "MinIO/Dremio/Nessie")
+System_Ext(analytics, "BI-платформа", "Power BI")
+
+Rel(admin, esb, "Настройка инфраструктуры", "UI/API")
+Rel(dev, esb, "Разрабока и поддержка инфраструктуры", "UI/API")
+Rel(support, esb, "Обеспчение помощи клиентам", "ESB")
+
+Rel(banking, esb, "Выписки, сверка", "SFTP/ISO20022/REST")
+Rel(crm, esb, "Обновление статусов, профили", "REST")
+Rel(financy, esb, "Отчеты и 1С", "REST/SOAP/JDBC/1С")
+Rel(wms, esb, "Прием, учет товаров", "REST")
+Rel(notify, esb, "Отправка уведомлений", "SMTP/SMS/FCM")
+Rel(iam, esb, "Аутентификация пользователей", "OIDC/OAuth2")
+Rel(monitoring, esb, "Метрики/логи/трейсы", "OpenTelemetry/Prometheus")
+Rel(dwh, esb, "CDC/события/архивы", "Kafka/S3 API/Batch")
+Rel(analytics, esb, "Сбор и анализ бизнес метрик", "Kafka/SQL/Clickhouse")
+
+Rel(esb, crm, "Пушит статусы и события", "REST/Kafka")
+Rel(esb, financy, "Синхронизирует справочники/проводки", "REST/SOAP/JDBC")
+Rel(esb, dwh, "Публикует накопленные данные", "Kafka/S3 API")
+Rel(esb, notify, "Отправляет уведомления", "SMTP/SMS/FCM")
+Rel(esb, pos, "Команды/отклики (возвраты, отмены)", "REST/gRPC")
+Rel(esb, analytics, "Дашбоард события", "Kafka/SQL")
+
+@enduml

@@ -1,0 +1,12 @@
+image:
+  repository: "${image}"
+  pullPolicy: IfNotPresent
+
+env:
+%{ for k, v in extra_env ~}
+  - name: "${k}"
+    value: "${v}"
+%{ endfor ~}
+
+service:
+  port: 8080

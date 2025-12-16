@@ -1,0 +1,82 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь")
+Person(admin, "Администратор")
+Person(analytics, "Аналитик")
+
+System_Boundary(platform, "Платформа «Будущее 2.0»") {
+    System_Boundary(user_platform, "Платформа самообслуживания") {
+        Container(frontend, "Фронтенд", "React", "UI платформы самообслуживания")
+        Container(mobile, "Мобильное приложение", "Kotlin", "Мобильное приложение платформы")
+        Container(gateway, "API-шлюз", "Kong", "Принимает запросы, применяет политики и маршрутизирует трафик")
+        Container(keycloak, "Keycloak", "IAM", "Аутентификация и авторизация пользователей, выдача токенов")
+        Container(backend, "Бэкенд", "Golang/Rust", "Обработка бизнес-логики и взаимодействие с базами данных")
+        ContainerDb(databases, "PostgreSQL")
+    }
+    System_Boundary(lake_house, "Lakehouse") {
+        Container(dremio, "Dremio", "Dremio", "Оптимизирует доступ к данным")
+        Container(nessie, "Nessie", "Nessie", "Управляет версиями и метаданными")
+        Container(minio, "S3", "Minio", "Хранит сырые и обработанные данные (parquet)")
+    }
+    System_Boundary(legacy, "Легаси-ландшафт") {
+        Container(legacy_dwh, "DWH", "SQL Server 2008", "Исторические витрины и отчёты из предыдущей системы")
+        Container(legacy_bi, "Legacy BI", "Power BI / PowerBuilder", "Существующие отчёты и интерфейсы операторов")
+        Container(legacy_bus, "Интеграционная шина", "Apache Camel ESB", "Оркестрация обмена данными между легаси-системами")
+        Container(legacy_fin, "Legacy Finance", "Go/Java", "Финтех-сервисы на Golang и Java")
+        Container(legacy_ai, "Legacy AI", "Python", "ИИ-сервисы на Python")
+    }
+    System_Boundary(finance_system, "Finance system") {
+        System("fintech", "Финтех компании", "Платежи, транзакции, выписки")
+    }
+    System_Boundary(ai_system, "AI system") {
+        System(ai, "ИИ система", "Сервисы ИИ для скорингов и рекомендаций")
+    }
+    System_Boundary(bi_system, "BI system") {
+        System(bi, "BI система", "Публикует дашборды и визуализации на основе данных lakehouse")
+    }
+
+    Container(airflow, "Airflow", "Apache Airflow", "Планирует и выполняет пайплайны обработки данных")
+    ContainerQueue(kafka, "Kafka", "Потоковая шина для обмена событиями и CDC")
+}
+
+Rel(fintech, kafka, "Публикует финансовые события", "Kafka Topics")
+
+Rel(user, frontend, "Работает через веб-интерфейс", "HTTPS/SSO")
+Rel(user, mobile, "Работает через мобильное приложение", "HTTPS/SSO")
+Rel(frontend, gateway, "Отправляет API-запросы", "HTTPS")
+Rel(mobile, gateway, "Отправляет API-запросы", "HTTPS")
+Rel(gateway, keycloak, "Получает/проверяет токен SSO", "OIDC/OAuth2")
+Rel(gateway, backend, "Маршрутизирует запросы", "REST")
+Rel(backend, databases, "Запрашивает данные", "SQL")
+Rel(backend, ai, "Запрашивает скоринг и рекомендации", "REST/gRPC")
+Rel(backend, kafka, "Публикует события и команды", "Kafka Producer")
+Rel(backend, legacy_bus, "Использует данные, пока идёт миграция", "REST")
+
+Rel(analytics, bi, "Использует дашборды и визуализации", "HTTPS/SSO")
+Rel(analytics,  legacy_bi, "Использует дашборды и визуализации", "HTTPS/SSO")
+Rel(bi, dremio, "Читает витрины и модели", "SQL")
+Rel(kafka, ai, "Поставляет события для скоринга", "Kafka Topics")
+
+Rel(databases, kafka, "Передают CDC-события", "Kafka Connect")
+Rel(ai, minio, "Читает обучающие выборки", "S3 API")
+Rel(dremio, minio, "Читает колоночные файлы", "S3 API")
+Rel(dremio, nessie, "Использует метаданные и версии", "REST/GRPC")
+
+Rel(airflow, kafka, "Читает события для пайплайнов", "Kafka Consumer")
+Rel(airflow, minio, "Сохраняет сырые и обработанные данные", "S3 API")
+Rel(airflow, nessie, "Регистрирует версии таблиц", "REST")
+Rel(airflow, dremio, "Регистрирует обновлённые датасеты", "SQL")
+Rel(airflow, databases, "Извлекает сырые данные", "ETL/CDC")
+Rel(airflow, legacy_dwh, "Выгружает исторические данные", "ETL")
+Rel(airflow, legacy_fin, "Выгружает финансовые отчеты за период времени", "ETL")
+Rel(airflow, legacy_ai, "Выгружает обработанные данные за период времени", "ETL")
+
+Rel(legacy_dwh, legacy_bus, "Публикует данные и события", "ETL/Batch")
+Rel(legacy_bi, legacy_bus, "Получает данные из DWH", "ETL")
+Rel(legacy_fin, legacy_bus, "Получает данные из DWH по финансам (отчеты)", "ETL")
+Rel(legacy_ai, legacy_bus, "Получает данные из DWH для обработки и сохранения результатов", "ETL")
+Rel(legacy_bus, kafka, "Транслирует события в новую платформу", "Camel Routes")
+Rel(legacy_bus, minio, "Выгружает исторические архивы", "S3 API")
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+title Terraform в Yandex Cloud
+
+rectangle "Pool Виртуальных машин" {
+  rectangle "Виртуальная машина" as VM {
+      rectangle "Kubernetes" {
+        rectangle "Net: future-net" as NET
+        rectangle "Volume: future-vol" as VOL
+        rectangle "Pod: App Golang HTTP" as APP
+        rectangle "Service: PostgreSQL postgres:16-alpine" as DB
+      }
+  }
+}
+
+rectangle "Terraform CLI" as TF #dceafc
+rectangle "Исходный код app/ + Dockerfile" as CODE #fff2cc
+rectangle "Настройка VM" as VMT #fec2cc
+rectangle "CI/CD пайплайн" as CI #fff2cc
+
+TF --> VM: init vm
+TF --> NET: init vm net
+TF --> VOL: init vm vol
+TF --> APP: init infra
+TF --> DB: init infra
+
+CODE -down-> TF : terraform apply
+VMT -down-> TF: terraform apply
+CI -right-> TF : plan/apply
+APP --> DB : Env: DB_HOST=db
+
+@enduml

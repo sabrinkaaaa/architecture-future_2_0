@@ -1,0 +1,14 @@
+name: future-2.0
+
+services:
+  tech-radar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: curl --fail http://localhost:3000 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10

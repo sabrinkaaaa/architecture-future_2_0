@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  repository: ""
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 8080
+env:
+  - name: DB_CONNECTION_STRING
+    value: "postgres://postgres:postgres@postgres-postgresql.future-2-0.svc.cluster.local/postgres?sslmode=disable"

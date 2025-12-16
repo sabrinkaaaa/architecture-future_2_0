@@ -1,0 +1,11 @@
+.idea/
+
+node_modules/
+
+key.json
+k3s.yaml
+
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
